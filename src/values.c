@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 
 _Bool eval_to_value(struct evaluator_state *state, struct expr *e, struct env_node *env, struct expr **out_expr, int64_t *out_result) {

@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 
 const char *subscript_methods_str[] = {
@@ -15,7 +13,7 @@ const char *subscript_methods_str[] = {
 	"SUBSCRIPT_DEREF_SIZES"
 };
 
-
+extern struct uniqtype __uniqtype__unsigned_char$8;
 static struct uniqtype *byte_type = &__uniqtype__unsigned_char$8;
 
 struct union_node *construct_bytes_union(struct object obj, size_t base, size_t length, enum footprint_direction direction) {

@@ -26,7 +26,6 @@ AC_CHECK_HEADERS([asm/fcntl.h asm/posix_types.h asm/types.h assert.h elf.h link.
 
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([DWARFIDL], [dwarfidl])
-PKG_CHECK_MODULES([LIBALLOCS], [liballocs])
 
 AC_CONFIG_FILES([Makefile libfootprints.pc])
 AC_OUTPUT

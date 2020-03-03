@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include <uniqtype.h>
 #include "footprints.h"
 
@@ -33,7 +31,7 @@ int64_t transmogrify_pointer(struct uniqtype *type, void *bytes) {
 		// aaaaaaaa scary
 		return (int64_t)(*(void**)bytes);
 	} else {
-		fprintf(stderr, "\ndon't know how to convert a '%s' to value!\n", type->name);
+		fprintf(stderr, "\ndon't know how to convert a '%s' to value!\n", UNIQTYPE_NAME(type));
 		assert(false);
 		return 0; // I'm sure assert() was noreturn last time I checked
 	}
@@ -65,7 +63,7 @@ _Bool object_to_value(struct evaluator_state *state, struct object object, int64
 	assert(UNIQTYPE_HAS_KNOWN_LENGTH(type));
 
 	fpdebug(state, "trying to object_to_value a '%s' at 0x%16lx (direct: %s)\n",
-	        type->name, (size_t)addr, (object.direct ? "yes" : "no"));
+	        UNIQTYPE_NAME(type), (size_t)addr, (object.direct ? "yes" : "no"));
 
 	if (object.direct) {
 		fpdebug(state, "it's direct, just dereferencing it\n");

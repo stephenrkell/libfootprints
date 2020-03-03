@@ -19,14 +19,10 @@ src_test_syscalls_SOURCES = src/test_syscalls.c
 src_test_syscalls_LDADD = src/libfootprints.la src/libfootprints_syscalls.la
 src_test_syscalls_DEPENDENCIES = src/libfootprints.la src/libfootprints_syscalls.la
 
-src/dynamic-list: src/linux-syscall-ifacetypes.o
-	( echo '{'; nm --format=posix "$<" | sed 's/[[:blank:]].*/;/'; echo '};') > "$@" || rm -f "$@"
-
 lib_LTLIBRARIES = src/libfootprints.la src/libfootprints_syscalls.la
-src_libfootprints_la_SOURCES = src/binary_ops.c src/eval.c src/footprints.c src/parser.c src/subscripts.c src/unary_ops.c src/values.c src/control_flow.c src/exprs.c src/idents.c src/objects.c src/printer.c src/unions.c src/linux-syscall-ifacetypes.c
-src_libfootprints_la_LDFLAGS = $(AM_LDFLAGS) -Wl,--hash-style=sysv -Wl,--dynamic-list,src/dynamic-list -Wl,--version-script,src/version-script
-src_libfootprints_la_DEPENDENCIES = src/dynamic-list
+src_libfootprints_la_SOURCES = src/binary_ops.c src/eval.c src/footprints.c src/parser.c src/subscripts.c src/unary_ops.c src/values.c src/control_flow.c src/exprs.c src/idents.c src/objects.c src/printer.c src/unions.c
+src_libfootprints_la_LDFLAGS = $(AM_LDFLAGS)
 
 src_libfootprints_syscalls_la_SOURCES = src/perform_syscall.c src/syscall_names.c
 src_libfootprints_syscalls_la_LIBADD = src/libfootprints.la
-src_libfootprints_syscalls_la_DEPENDENCIES = src/libfootprints.la src/dynamic-list
+src_libfootprints_syscalls_la_DEPENDENCIES = src/libfootprints.la

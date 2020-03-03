@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 
 ////////////////////////////////////////////////////////////
@@ -49,12 +47,14 @@ struct expr *lookup_in_object(struct object *context, char *ident, enum footprin
 	assert(context->type != NULL);
 	struct object obj;
 	size_t i;
-	for (i = 0; i < context->type->nmemb; i++) {
-		if (strcmp(ident, context->type->subobj_names[i]) == 0) {
-			obj.type = context->type->contained[i].ptr;
-			obj.addr = (void*) context->addr + context->type->contained[i].offset;
-			obj.direct = false;
-			return construct_object(obj, direction);
+	if (UNIQTYPE_IS_COMPOSITE_TYPE(context->type)) {
+		for (i = 0; i < UNIQTYPE_COMPOSITE_MEMBER_COUNT(context->type); i++) {
+			if (strcmp(ident, UNIQTYPE_COMPOSITE_SUBOBJ_NAMES(context->type)[i]) == 0) {
+				obj.type = context->type->related[i].un.memb.ptr;
+				obj.addr = (void*) context->addr + context->type->related[i].un.memb.off;
+				obj.direct = false;
+				return construct_object(obj, direction);
+			}
 		}
 	}
 

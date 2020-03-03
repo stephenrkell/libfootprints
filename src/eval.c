@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 
 
@@ -67,7 +65,7 @@ struct evaluator_state *eval_footprint_with(struct evaluator_state *state, struc
 			break;
 		} else {
 			struct object o;
-			o.type = func->contained[i+1].ptr;
+			o.type = func->related[i+1].un.t.ptr;
 			o.addr = arg_values + i;
 			o.direct = true;
 			//fpdebug(state, "created arg %s with type %s and typed value 0x%lx from untyped 0x%lx\n", footprint->arg_names[i], o.type->name, object_to_value(state, o), arg_values[i]);

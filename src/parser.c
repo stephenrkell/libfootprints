@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 
 #include "footprints_antlr_macros.h"
@@ -50,10 +48,10 @@ struct footprint_node *parse_footprints_from_file(const char *filename, struct e
 		perror("Could not open antlr3FileStream");
 		return NULL;
 	}
-	dwarfidlSimpleCLexer *lexer = dwarfidlSimpleCLexerNew(in_fileobj);
+	dwarfidlNewCLexer *lexer = dwarfidlNewCLexerNew(in_fileobj);
 	ANTLR3_COMMON_TOKEN_STREAM *tokenStream = antlr3CommonTokenStreamSourceNew(
 		ANTLR3_SIZE_HINT, TOKENSOURCE(lexer));
-	dwarfidlSimpleCParser *parser = dwarfidlSimpleCParserNew(tokenStream);
+	dwarfidlNewCParser *parser = dwarfidlNewCParserNew(tokenStream);
 	ANTLR3_BASE_TREE *ast = parser->toplevel(parser).tree;
 
 	struct footprint_node *prints = NULL;

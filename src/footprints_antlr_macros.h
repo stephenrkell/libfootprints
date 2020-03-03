@@ -1,6 +1,10 @@
 #ifndef __FOOTPRINTS_ANTLR_MACROS_H__
 #define __FOOTPRINTS_ANTLR_MACROS_H__
 
+#include <antlr3commontree.h>
+#include "dwarfidl/dwarfidlNewCParser.h"
+#include "dwarfidl/dwarfidlNewCLexer.h"
+
 /* Stolen from libantlr3cxx and very roughly converted to C */
 
 #define GET_TEXT(node) (node)->getText((node))

@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 #include "perform_syscall.h"
 

@@ -15,9 +15,7 @@
 
 #include <link.h>
 #include <elf.h>
-#include <relf.h>
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
+//#include <relf.h>
 #include "footprints.h"
 
 #include "perform_syscall.h"
@@ -251,19 +249,19 @@ void *map_object(struct evaluator_state *state,
 	} else {
 		void *result_ptr;
 		if (UNIQTYPE_HAS_SUBOBJECTS(obj.type)) {
-			if (obj.type->is_array) {
+			if (UNIQTYPE_IS_ARRAY_TYPE(obj.type)) {
 				// array
 				if (defined_position == NULL) {
-					result_ptr = malloc(obj.type->pos_maxoff);
+					result_ptr = malloc(UNIQTYPE_SIZE_IN_BYTES(obj.type));
 					assert(result_ptr != NULL);
 				} else {
 					result_ptr = defined_position;
 				}
 				
-				for (int i = 0; i < obj.type->array_len; i++) {
-					int offset = i * obj.type->contained[0].ptr->pos_maxoff;
+				for (int i = 0; i < UNIQTYPE_ARRAY_LENGTH(obj.type); i++) {
+					int offset = i * UNIQTYPE_SIZE_IN_BYTES(UNIQTYPE_ARRAY_ELEMENT_TYPE(obj.type));
 					struct expr *item = expr_new_with(expr->direction, EXPR_OBJECT);
-					item->object.type = obj.type->contained[0].ptr;
+					item->object.type = UNIQTYPE_ARRAY_ELEMENT_TYPE(obj.type);
 					item->object.addr = obj.addr + offset;
 					item->object.direct = false;
 					void *mapped_ptr = map_object(state, mapped_guest, mapped_host, item, result_ptr + offset);
@@ -277,24 +275,25 @@ void *map_object(struct evaluator_state *state,
 				}
 				
 				if (defined_position == NULL) {
-					*mapped_guest = extent_node_new_with((size_t)obj.addr, obj.type->pos_maxoff, *mapped_guest);
-					*mapped_host = extent_node_new_with((size_t)result_ptr, obj.type->pos_maxoff, *mapped_host);
+					*mapped_guest = extent_node_new_with((size_t)obj.addr, UNIQTYPE_SIZE_IN_BYTES(obj.type), *mapped_guest);
+					*mapped_host = extent_node_new_with((size_t)result_ptr, UNIQTYPE_SIZE_IN_BYTES(obj.type), *mapped_host);
 				}
 				
 				return result_ptr;
 			} else {
 				// struct
+				assert(UNIQTYPE_IS_COMPOSITE_TYPE(obj.type));
 				if (defined_position == NULL) {
-					result_ptr = malloc(obj.type->pos_maxoff);
+					result_ptr = malloc(UNIQTYPE_SIZE_IN_BYTES(obj.type));
 					assert(result_ptr != NULL);
 				} else {
 					result_ptr = defined_position;
 				}
 				
-				for (int i = 0; i < obj.type->nmemb; i++) {
-					int offset = obj.type->contained[i].offset;
+				for (int i = 0; i < UNIQTYPE_COMPOSITE_MEMBER_COUNT(obj.type); i++) {
+					int offset = obj.type->related[i].un.memb.off;
 					struct expr *member = expr_new_with(expr->direction, EXPR_OBJECT);
-					member->object.type = obj.type->contained[i].ptr;
+					member->object.type = obj.type->related[i].un.memb.ptr;
 					member->object.addr = obj.addr + offset;
 					member->object.direct = false;
 					void *mapped_ptr = map_object(state, mapped_guest, mapped_host, member, result_ptr + offset);
@@ -308,8 +307,8 @@ void *map_object(struct evaluator_state *state,
 				}
 
 				if (defined_position == NULL) {
-					*mapped_guest = extent_node_new_with((size_t)obj.addr, obj.type->pos_maxoff, *mapped_guest);
-					*mapped_host = extent_node_new_with((size_t)result_ptr, obj.type->pos_maxoff, *mapped_host);
+					*mapped_guest = extent_node_new_with((size_t)obj.addr, UNIQTYPE_SIZE_IN_BYTES(obj.type), *mapped_guest);
+					*mapped_host = extent_node_new_with((size_t)result_ptr, UNIQTYPE_SIZE_IN_BYTES(obj.type), *mapped_host);
 				}
 
 				return result_ptr;
@@ -317,7 +316,7 @@ void *map_object(struct evaluator_state *state,
 		} else {
 			// single object
 			if (defined_position == NULL) {
-				result_ptr = malloc(obj.type->pos_maxoff);
+				result_ptr = malloc(UNIQTYPE_SIZE_IN_BYTES(obj.type));
 				assert(result_ptr != NULL);
 			} else {
 				result_ptr = defined_position;
@@ -327,19 +326,19 @@ void *map_object(struct evaluator_state *state,
 			case FP_DIRECTION_READ:
 			case FP_DIRECTION_READWRITE:
 			case FP_DIRECTION_UNKNOWN: {
-				void *bytes = _find_in_cache(state, (size_t)obj.addr, obj.type->pos_maxoff);
+				void *bytes = _find_in_cache(state, (size_t)obj.addr, UNIQTYPE_SIZE_IN_BYTES(obj.type));
 				assert(bytes != NULL);
-				memcpy(result_ptr, bytes, obj.type->pos_maxoff);
+				memcpy(result_ptr, bytes, UNIQTYPE_SIZE_IN_BYTES(obj.type));
 			} break;
 			case FP_DIRECTION_WRITE:
-				memset(result_ptr, 0, obj.type->pos_maxoff);
+				memset(result_ptr, 0, UNIQTYPE_SIZE_IN_BYTES(obj.type));
 				break;
 			default:
 				assert(false);
 			}
 			if (defined_position == NULL) {
-				*mapped_guest = extent_node_new_with((size_t)obj.addr, obj.type->pos_maxoff, *mapped_guest);
-				*mapped_host = extent_node_new_with((size_t)result_ptr, obj.type->pos_maxoff, *mapped_host);
+				*mapped_guest = extent_node_new_with((size_t)obj.addr, UNIQTYPE_SIZE_IN_BYTES(obj.type), *mapped_guest);
+				*mapped_host = extent_node_new_with((size_t)result_ptr, UNIQTYPE_SIZE_IN_BYTES(obj.type), *mapped_host);
 			}
 			return result_ptr;
 		}
@@ -544,8 +543,8 @@ void perform_syscall(struct syscall_state *state) {
 	assert(read_footprint == NULL);
 
 	long int rewritten_syscall_args[6] = {0};
-	for (int i = 0; i < state->syscall_type->array_len; i++) {
-		struct uniqtype *arg_type = state->syscall_type->contained[i+1].ptr;
+	for (int i = 0; i < UNIQTYPE_ARRAY_LENGTH(state->syscall_type); i++) {
+		struct uniqtype *arg_type = state->syscall_type->related[i+1].un.memb.ptr;
 		if (UNIQTYPE_IS_POINTER_TYPE(arg_type)) {
 			if (state->syscall_args[i] == 0) {
 				rewritten_syscall_args[i] = 0;

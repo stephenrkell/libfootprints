@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
 #include "footprints.h"
 
 #include "footprints_antlr_macros.h"
@@ -170,7 +168,7 @@ char *print_expr_tree(struct expr *e) {
 		assert(asprintf(&body, format_str, dir(e), union_body) >= 0);
 	} break;
 	case EXPR_OBJECT: {
-		assert(asprintf(&body, "(%s object @%p of type %s)", dir(e), e->object.addr, e->object.type->name) >= 0);
+		assert(asprintf(&body, "(%s object @%p of type %s)", dir(e), e->object.addr, UNIQTYPE_NAME(e->object.type)) >= 0);
 	} break;
 	case EXPR_IDENT: {
 		assert(asprintf(&body, "(%s ident %s)", dir(e), e->ident) >= 0);
