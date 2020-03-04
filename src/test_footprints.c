@@ -4,9 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <dwarfidl/parser_includes.h>
-#include <liballocs.h>
+#include <antlr3interfaces.h>
+#include <antlr3tokenstream.h>
+#include <antlr3commontree.h>
+#include "dwarfidl/dwarfidlNewCParser.h"
+#include "dwarfidl/dwarfidlNewCLexer.h"
 #include "footprints.h"
+
+
 
 typedef ANTLR3_TOKEN_SOURCE TokenSource;
 typedef ANTLR3_COMMON_TOKEN CommonToken;
@@ -21,12 +26,12 @@ int main(int argc, char **argv) {
 	
 	pANTLR3_INPUT_STREAM in_fileobj = antlr3FileStreamNew((uint8_t *) filename,
 	                                                      ANTLR3_ENC_UTF8);
-	dwarfidlSimpleCLexer *lexer = dwarfidlSimpleCLexerNew(in_fileobj);
+	dwarfidlNewCLexer *lexer = dwarfidlNewCLexerNew(in_fileobj);
 	CommonTokenStream *tokenStream =
 		antlr3CommonTokenStreamSourceNew(ANTLR3_SIZE_HINT, TOKENSOURCE(lexer));
-	dwarfidlSimpleCParser *parser = dwarfidlSimpleCParserNew(tokenStream); 
+	dwarfidlNewCParser *parser = dwarfidlNewCParserNew(tokenStream); 
 	
-	dwarfidlSimpleCParser_expression_return ret = parser->expression(parser);
+	dwarfidlNewCParser_expression_return ret = parser->expression(parser);
 	Tree *tree = ret.tree;
 	
 	pANTLR3_STRING s = tree->toStringTree(tree);
